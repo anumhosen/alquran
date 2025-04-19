@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আল কুরআন</title>
+    <link rel="icon" type="image/x-icon" href="./img/favicon.png">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> -->
+    <link rel="stylesheet" href="./fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="./css/paralax.min.css">
+    <link rel="stylesheet" href="./css/fonts.css">
+    <link rel="stylesheet" href="./css/light.css" id="theme">
+    <link rel="stylesheet" href="./css/style.css">
+    <style id="star_color">
+         :root {
+            --sc: rgb(255, 166, 225);
+        }
+    </style>
+    <style id="ar_font">
+        .ar {
+            font-family: Kitab;
+        }
+    </style>
+    <style id="bn_font">
+        #index h2,
+        #settings h2,
+        #index ol li,
+        .ayat,
+        .a_ayat,
+        .name h2 {
+            font-family: Kalpurush;
+        }
+    </style>
+    <style id="ar_size_style">
+        .ar {
+            font-size: 30px;
+        }
+    </style>
+    <style id="bn_size_style">
+        .bn,
+        .pr {
+            font-size: 20px;
+        }
+    </style>
+    <style id="pr_style">
+        .pr {
+            background: var(--secondary-color);
+        }
+    </style>
+    <style>
+        @media (max-width: 768px) {
+            .ar {
+                font-size: 1.3em;
+            }
+            .pr,
+            .bn {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="body">
+        <div class="player">
+            <div id="loader"></div>
+            <div class="logo">
+                <img src="./img/favicon.png" alt="">
+                <h2>আল কোরআন</h2>
+            </div>
+            <div class="button">
+                <button onclick="indexToggle()"><i class="fas fa-bars"></i></button>
+                <button onclick="settingsToggle()"><i class="fas fa-gear"></i></button>
+                <button onclick="playPrev()"><i class="fas fa-step-backward"></i></button>
+                <button onclick="playPause()"><i id="btnPlay" class="fas fa-play"></i></button>
+                <button onclick="playNext()"><i class="fas fa-step-forward"></i></button>
+                <button onclick="stopAudio()"><i class="fas fa-stop"></i></button>
+                <button onclick="autoPlay()"><i class="fas fa-toggle-on"></i></button>
+                <button onclick="autoScroll()"><i class="fas fa-angles-down"></i></button>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="index" id="index"></div>
+            <div id="settings">
+
+                <h2>সেটিংস <button onclick="settingsToggle()"><i class="fas fa-x"></i></button>
+                </h2>
+
+                <div class="settings">
+                    <div class="card">
+                        <div class="heading">
+                            <h3><i class="fas fa-feather-pointed"></i>থিম</h3>
+                        </div>
+                        <div class="button">
+                            <button onclick="darkLight(this)"><i id="darkLight"class="fas fa-sun"></i></button>
+                            <button onclick="toggleBg()"><i class="fas fa-fan"></i></button>
+                            <button onclick="randomStar()"><i class="fas fa-star"></i></button>
+                            <button onclick="fullScreen()"><i id="full" class="fas fa-expand"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="heading">
+                            <h3 id="ar" onclick="showOptions(this)"><i id="ar_arrow" class="fas fa-caret-right"></i>আরবি ফন্ট</h3>
+                            <span class="resize">
+                                <span id="ar_size">30</span>
+                            <input type="range" name="ar_font" min="12" max="72" value="30" onchange="changeFontSize(this)">
+                            </span>
+                        </div>
+                        <div id="ar_options">
+                            <option onclick="changeFont(this)" id="ar" value="Kitab">কিতাব</option>
+                            <option onclick="changeFont(this)" id="ar" value="AmiriQuran">আমিরি কুরআন</option>
+                            <option onclick="changeFont(this)" id="ar" value="Qalam">কালাম</option>
+                            <option onclick="changeFont(this)" id="ar" value="Me_quran">কুরআন</option>
+                            <option onclick="changeFont(this)" id="ar" value="Lateef">লতিফ</option>
+                            <option onclick="changeFont(this)" id="ar" value="Noorehuda">নূর হুদা</option>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="heading">
+                            <h3 id="bn" onclick="showOptions(this)"><i id="bn_arrow" class="fas fa-caret-right"></i>বাংলা ফন্ট</h3>
+                            <span class="resize">
+                            <span id="bn_size">20</span>
+                            <input type="range" name="bn_font" min="12" max="72" value="20" onchange="changeFontSize(this)">
+                            </span>
+                        </div>
+                        <div id="bn_options">
+                            <option id="bn" onclick="changeFont(this)" value="AnekBangla">আনিক বাংলা</option>
+                            <option id="bn" onclick="changeFont(this)" value="Kalpurush">কালপুরুষ</option>
+                            <option id="bn" onclick="changeFont(this)" value="Mina">মিনা</option>
+                            <option id="bn" onclick="changeFont(this)" value="Serif_Bangla">শেরিফ বাংলা</option>
+                        </div>
+                    </div>
+
+
+                    <div class="card">
+                        <div class="heading">
+                            <h3 id="arabic" onclick="showHideElm(this)"><i id="arabic_box" class="fas fa-square-check"></i>আরবি</h3>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="heading">
+                            <h3 id="pronunciation" onclick="showHideElm(this)"><i id="pronunciation_box" class="fas fa-square-check"></i>উচ্চারণ</h3>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="heading">
+                            <h3 id="translation" onclick="showHideElm(this)"><i id="translation_box" class="fas fa-square-check"></i>আনুবাদ</h3>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="heading">
+                            <h3 id="tl" onclick="showOptions(this)"><i id="tl_arrow" class="fas fa-caret-right"></i>তিলাওয়াত</h3>
+                        </div>
+                        <div id="tl_options">
+                            <h3> <i class="fas fa-hard-drive"></i><span>Offline</span>
+                            </h3>
+                            <option id="tl" onclick="setAudioSource(this)" value="alafasy_offline">মিসারি আল আফাশি</option>
+
+                            <h3> <i class="fas fa-wifi"></i><span>Online</span>
+                            </h3>
+                            <option id="tl" onclick="setAudioSource(this)" value="AbdulBaset">AbdulBaset</option>
+                            <!-- <option id="tl" onclick="setAudioSource(this)" value="Alafasy">Alafasy</option> -->
+                            <option id="tl" onclick="setAudioSource(this)" value="Husary">Husary</option>
+                            <option id="tl" onclick="setAudioSource(this)" value="Jibreel">Jibreel</option>
+                            <option id="tl" onclick="setAudioSource(this)" value="Minshawi">Minshawi</option>
+                            <option id="tl" onclick="setAudioSource(this)" value="Rifai">Rifai</option>
+                            <option id="tl" onclick="setAudioSource(this)" value="Shatri">Shatri</option>
+                            <option id="tl" onclick="setAudioSource(this)" value="Shuraym">Shuraym</option>
+                            <option id="tl" onclick="setAudioSource(this)" value="Sudais">Sudais</option>
+                            <option id="tl" onclick="setAudioSource(this)" value="Tunaiji">Tunaiji</option>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="heading">
+                            <h3 id="in" onclick="showHideInfo(this)"><i class="fas fa-circle-info"></i>তথ্য</h3>
+                        </div>
+                        <div id="in_options">
+                            <h3>Build</h3>
+                            <p><i class="fab fa-windows"></i>Cross-Platform windows app</p>
+                            <p><i class="fab fa-node-js"></i>Build with electronjs</p>
+                            <p>
+                                <i class="fab fa-github"></i>
+                                <a href="https://anumhosen.github.io/alquran/" target="_blank">Source Code</a>
+                            </p>
+                            <!-- <p><i class="fab fa-html5"></i>HTML <i class="fab fa-css3"></i>CSS <i class="fab fa-js"></i>JavaScript</p> -->
+                            <hr>
+                            <h3>Developer</h3>
+                            <h4><i class="fas fa-circle-user"></i>Anum Hosen Shawon</h4>
+                            <p><i class="fas fa-location-dot"></i>Satkhira, Khulna, Bangladesh</p>
+                            <h4><i class="fas fa-graduation-cap"></i>Jashore University of Science and Technology</h4>
+                            <p><i class="fas fa-atom"></i>Dept. of Physics</p>
+                            <hr>
+                            <h3>Contact</h3>
+                            <p><i class="fab fa-google"></i>anumhosen@gmail.com</p>
+                            <p>
+                                <i class="fab fa-facebook"></i>
+                                <a href="https://www.facebook.com/anumhosen/" target="_blank">এনাম হোসেন</a>
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="main" id="main"></div>
+        </div>
+        <section class="wrapper">
+            <div id="stars"></div>
+            <div id="stars2"></div>
+            <div id="stars3"></div>
+        </section>
+        <div id="hidden">
+            <img id="bg_img" src="#" alt="#">
+        </div>
+    </div>
+
+
+    <script src="./js/script.js"></script>
+    <script src="./js/audioplayer.js"></script>
+    <script src="./js/theme.js"></script>
+</body>
+
+</html>

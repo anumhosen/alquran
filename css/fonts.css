@@ -1,0 +1,52 @@
+@font-face {
+    font-family: Kitab;
+    src: url(../fonts/kitab.ttf);
+}
+
+@font-face {
+    font-family: AmiriQuran;
+    src: url(../fonts/AmiriQuran.ttf);
+}
+
+@font-face {
+    font-family: Qalam;
+    src: url(../fonts/Qalam.ttf);
+}
+
+@font-face {
+    font-family: Me_quran;
+    src: url(../fonts/Me_quran.ttf);
+}
+
+@font-face {
+    font-family: Lateef;
+    src: url(../fonts/Lateef-Regular.ttf);
+}
+
+@font-face {
+    font-family: Noorehuda;
+    src: url(../fonts/noorehuda.ttf);
+}
+
+
+/* Bangla Fonts */
+
+@font-face {
+    font-family: AnekBangla;
+    src: url(../fonts/AnekBangla-Regular.ttf);
+}
+
+@font-face {
+    font-family: Kalpurush;
+    src: url(../fonts/Kalpurush.ttf);
+}
+
+@font-face {
+    font-family: Mina;
+    src: url(../fonts/Mina-Regular.ttf);
+}
+
+@font-face {
+    font-family: Serif_Bangla;
+    src: url(../fonts/NotoSerifBengali.ttf);
+}

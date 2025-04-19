@@ -1,0 +1,26 @@
+{
+    "name": "alquran",
+    "version": "1.0.0",
+    "description": "alquran-dasktop-app",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "pack": "electron-builder --dir",
+        "dist": "electron-builder"
+    },
+    "build": {
+        "appId": "com.anumhosen.alquran",
+        "icon": "icon.png"
+    },
+    "repository": "https://github.com/anumhosen/alquran/",
+    "keywords": [
+        "Electron",
+        "alquran"
+    ],
+    "author": "Anum Hosen",
+    "license": "CC0-1.0",
+    "devDependencies": {
+        "electron": "^35.2.0",
+        "electron-builder": "^26.0.12"
+    }
+}
