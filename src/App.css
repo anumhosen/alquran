@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Sepia theme colors */
+html.sepia {
+    background-color: #fbf0d9;
+    color: #433422;
+}
+
+html.sepia .bg-white {
+    background-color: #f5e6c8 !important;
+}
+
+html.sepia .bg-emerald-50\/30,
+html.sepia .bg-emerald-50\/50,
+html.sepia .bg-gray-50 {
+    background-color: #eee0c0 !important;
+}
+
+html.sepia .border-emerald-100,
+html.sepia .border-gray-100,
+html.sepia .border-gray-200 {
+    border-color: #e2d1b0 !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Custom smooth scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(15, 118, 110, 0.2);
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(15, 118, 110, 0.5);
+}
+
+.dir-rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+.dir-ltr {
+    direction: ltr;
+    text-align: left;
+}

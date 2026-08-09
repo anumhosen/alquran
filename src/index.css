@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+/* Arabic Fonts */
+@font-face {
+    font-family: "Kitab";
+    src: url("/fonts/kitab.ttf");
+}
+@font-face {
+    font-family: "AmiriQuran";
+    src: url("/fonts/AmiriQuran.ttf");
+}
+@font-face {
+    font-family: "MeQuran";
+    src: url("/fonts/me_quran.ttf");
+}
+@font-face {
+    font-family: "Lateef";
+    src: url("/fonts/Lateef-Regular.ttf");
+}
+@font-face {
+    font-family: "NotoNaskhArabic";
+    src: url("/fonts/NotoNaskhArabic-Regular.ttf");
+}
+@font-face {
+    font-family: "NooreHidayat";
+    src: url("/fonts/noorehidayat.ttf");
+}
+@font-face {
+    font-family: "NooreHira";
+    src: url("/fonts/noorehira.ttf");
+}
+@font-face {
+    font-family: "NooreHuda";
+    src: url("/fonts/noorehuda.ttf");
+}
+@font-face {
+    font-family: "Qalam";
+    src: url("/fonts/qalam.ttf");
+}
+
+/* Bangla Fonts */
+@font-face {
+    font-family: "Kalpurush";
+    src: url("/fonts/Kalpurush.ttf");
+}
+@font-face {
+    font-family: "AnekBangla";
+    src: url("/fonts/AnekBangla-Regular.ttf");
+}
+@font-face {
+    font-family: "Mina";
+    src: url("/fonts/Mina-Regular.ttf");
+}
+@font-face {
+    font-family: "NotoSerifBengali";
+    src: url("/fonts/NotoSerifBengali.ttf");
+}
