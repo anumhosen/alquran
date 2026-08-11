@@ -46,7 +46,7 @@ export default function Search() {
 
     return (
         <div className="w-full h-full overflow-y-auto">
-            <div className='max-w-5xl py-6 space-y-6 mx-auto'>
+            <div className='max-w-5xl py-2 md:py-6 px-2 md:px-6 space-y-6 mx-auto'>
                 <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-md border border-emerald-100 dark:border-gray-800">
                     <h2 className="text-2xl font-bold text-emerald-900 dark:text-emerald-300 mb-2 flex items-center space-x-2">
                         <FaSearch className="w-5 h-5 text-emerald-600" />

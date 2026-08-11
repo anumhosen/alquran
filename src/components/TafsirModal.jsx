@@ -5,7 +5,7 @@ import { FaTimes, FaBookReader } from 'react-icons/fa';
 
 export default function TafsirModal() {
     const { activeTafsirAyah, tafsirText, tafsirLoading, closeTafsir } = useQuranStore();
-    const { tafsirDb, setTafsirDb } = useSettingsStore();
+    const { tafsirDb, setTafsirDb, translationFontSize, banglaFontFamily } = useSettingsStore();
 
     if (!activeTafsirAyah) return null;
 
@@ -27,7 +27,7 @@ export default function TafsirModal() {
                             Tafsir - Surah {sura}, Ayah {ayah}
                         </h3>
                     </div>
-                    <button 
+                    <button
                         onClick={closeTafsir}
                         className="p-1.5 hover:bg-emerald-700 rounded-lg text-emerald-200 hover:text-white transition-colors"
                     >
@@ -49,7 +49,7 @@ export default function TafsirModal() {
                         <option value="bn_tafsirzakaria.db">Tafsir Abu Bakr Zakaria (bn)</option>
                         <option value="bn_tafsirbayaan.db">Tafsir Bayaan (bn)</option>
                         <option value="bn_mokhtasar.db">Al-Mokhtasar (bn)</option>
-                        <option value="kathir.db">Tafsir Ibn Kathir (ar)</option>
+                        <option value="kathir.db">Tafsir Ibn Kathir (en)</option>
                     </select>
                 </div>
 
@@ -61,8 +61,8 @@ export default function TafsirModal() {
                             <span>Loading Tafsir content...</span>
                         </div>
                     ) : (
-                        <div className="whitespace-pre-line">
-                            {tafsirText || 'No Tafsir text available for this verse.'}
+                        <div className="whitespace-pre-line" style={{ fontSize: `${translationFontSize}px`, fontFamily: banglaFontFamily }}>
+                            {<div dangerouslySetInnerHTML={{__html: tafsirText}}></div> || 'No Tafsir text available for this verse.'}
                         </div>
                     )}
                 </div>

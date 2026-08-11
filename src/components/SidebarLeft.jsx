@@ -30,7 +30,7 @@ export default function SidebarLeft() {
     };
 
     return (
-        <aside className="fixed inset-y-0 left-0 z-1 w-80 bg-white dark:bg-gray-900 shadow-2xl flex flex-col mt-10 animate-in slide-in-from-left duration-200">
+        <aside className="fixed inset-y-0 left-0 z-10 w-80 bg-white dark:bg-gray-900 shadow-2xl flex flex-col mt-10 animate-in slide-in-from-left duration-200">
             {/* Header */}
             <div className="p-4 bg-emerald-800 text-white flex items-center justify-between">
                 <div className="flex items-center space-x-2">

@@ -19,7 +19,7 @@ export default function Bookmarks() {
 
     return (
         <div className="w-full overflow-y-auto">
-            <div className='max-w-5xl mx-auto py-6 space-y-6'>
+            <div className='max-w-5xl mx-auto py-2 md:py-6 px-2 md:px-6 space-y-6'>
                 {/* Last Read Box */}
                 {lastRead && (
                     <div className="bg-linear-to-r from-emerald-800 to-teal-800 text-white rounded-2xl p-6 shadow-xl flex items-center justify-between">

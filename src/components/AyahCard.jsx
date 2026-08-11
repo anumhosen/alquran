@@ -11,23 +11,21 @@ export default function AyahCard({ ayahData }) {
     const { addBookmark, removeBookmark, isBookmarked, setLastRead } = useBookmarkStore();
     const [copied, setCopied] = React.useState(false);
 
-    const { sura, ayah, arabicText, translationText, words } = ayahData;
+    const { sura, ayah, arabicText, translations, translationText, words } = ayahData;
     const bookmarked = isBookmarked(sura, ayah);
     const isPlayingCurrent = audioState.isPlaying && audioState.sura === sura && audioState.currentAyah === ayah;
 
     const handleCopy = () => {
-        const textToCopy = `${arabicText}\n${translationText} (Surah ${currentSurahMeta?.en || sura} ${sura}:${ayah})`;
+        const fullTr = (translations || []).map((t) => `${t.name}: ${t.text}`).join('\n');
+        const textToCopy = `${arabicText}\n${fullTr || translationText} (Surah ${currentSurahMeta?.en || sura} ${sura}:${ayah})`;
         navigator.clipboard.writeText(textToCopy);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
 
     const handleBookmarkToggle = () => {
-        if (bookmarked) {
-            removeBookmark(sura, ayah);
-        } else {
-            addBookmark(sura, ayah, currentSurahMeta?.en || `Surah ${sura}`);
-        }
+        if (bookmarked) removeBookmark(sura, ayah);
+        else addBookmark(sura, ayah, currentSurahMeta?.en || `Surah ${sura}`);
     };
 
     const handlePlayAudio = () => {
@@ -40,36 +38,27 @@ export default function AyahCard({ ayahData }) {
     };
 
     return (
-        <div 
+        <div
             id={`ayah-${sura}-${ayah}`}
-            className={`p-6 mb-5 rounded-2xl bg-white dark:bg-gray-800 shadow-md border transition-all ${
-                isPlayingCurrent 
-                    ? 'border-emerald-500 ring-2 ring-emerald-400/30 dark:border-emerald-500' 
+            className={`p-6 mb-5 rounded-2xl bg-white dark:bg-gray-800 shadow-md border transition-all ${isPlayingCurrent
+                    ? 'border-emerald-500 ring-2 ring-emerald-400/30 dark:border-emerald-500'
                     : 'border-emerald-100 dark:border-gray-700/70 hover:border-emerald-300'
-            }`}
+                }`}
         >
             {/* Header bar of the Ayah Card */}
             <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-100 dark:border-gray-700">
-                {/* Ayah Badge */}
                 <div className="flex items-center space-x-2">
                     <span className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 font-bold text-sm flex items-center justify-center border border-emerald-300 dark:border-emerald-700">
                         {sura}:{ayah}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                        Ayah {ayah}
-                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Ayah {ayah}</span>
                 </div>
 
-                {/* Ayah Action Buttons */}
                 <div className="flex items-center space-x-1 sm:space-x-2">
                     <button
                         onClick={handlePlayAudio}
                         title={isPlayingCurrent ? "Pause Recitation" : "Play Recitation"}
-                        className={`p-2 rounded-lg transition-colors ${
-                            isPlayingCurrent 
-                                ? 'bg-emerald-600 text-white' 
-                                : 'bg-emerald-50 dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
-                        }`}
+                        className={`p-2 rounded-lg transition-colors ${isPlayingCurrent ? 'bg-emerald-600 text-white' : 'bg-emerald-50 dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'}`}
                     >
                         {isPlayingCurrent ? <FaPause className="w-3.5 h-3.5" /> : <FaPlay className="w-3.5 h-3.5" />}
                     </button>
@@ -101,24 +90,42 @@ export default function AyahCard({ ayahData }) {
             </div>
 
             {/* Main Arabic Verses Text */}
-            <div 
+            {/* Word-by-Word View */}
+            {showWordByWord && words && words.length > 0 ? (
+                <WordByWordView words={words} sura={sura} ayah={ayah} />
+            ) : (<div
                 className="text-right leading-loose text-emerald-950 dark:text-emerald-100 mb-4 dir-rtl"
                 style={{ fontSize: `${arabicFontSize}px`, fontFamily: arabicFontFamily, lineHeight: 2.2 }}
             >
                 {arabicText}
-            </div>
+            </div>)}
 
-            {/* Optional Word-by-Word View */}
-            {showWordByWord && words && words.length > 0 && (
-                <WordByWordView words={words} sura={sura} ayah={ayah} />
-            )}
-
-            {/* Translation Text */}
-            <div 
-                className="text-gray-800 dark:text-gray-200 leading-relaxed pt-2 border-t border-dashed border-emerald-100 dark:border-gray-700"
-                style={{ fontSize: `${translationFontSize}px`, fontFamily: banglaFontFamily }}
-            >
-                {translationText}
+            {/* Multiple Translations List */}
+            <div className="pt-3 space-y-3 border-t border-dashed border-emerald-100 dark:border-gray-700">
+                {translations && translations.length > 0 ? (
+                    translations.map((tr, index) => (
+                        <div key={tr.db || index} className="space-y-1">
+                            {translations.length > 1 && (
+                                <span className="inline-block text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                                    {tr.name}
+                                </span>
+                            )}
+                            <div
+                                className="text-gray-800 dark:text-gray-200 leading-relaxed"
+                                style={{ fontSize: `${translationFontSize}px`, fontFamily: banglaFontFamily }}
+                            >
+                                {tr.text}
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div
+                        className="text-gray-800 dark:text-gray-200 leading-relaxed"
+                        style={{ fontSize: `${translationFontSize}px`, fontFamily: banglaFontFamily }}
+                    >
+                        {translationText}
+                    </div>
+                )}
             </div>
         </div>
     );

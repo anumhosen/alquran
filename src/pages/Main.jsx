@@ -33,24 +33,24 @@ export default function Main() {
         <div className="w-full h-full relative">
 
             {/* Top-Left FaList Icon Toggle Button */}
-            {!showIndex && <div className="absolute left-6 top-6">
+            {!showIndex && <div className="absolute left-2 sm:left-6 top-2 sm:top-6 z-3">
                 <button
                     onClick={() => setShowIndex(!showIndex)}
                     title={showIndex ? "Hide Surah Index" : "Show Surah Index"}
-                    className="p-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-md transition-transform active:scale-95 flex items-center space-x-2"
+                    className="p-2 sm:p-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg sm:rounded-xl shadow-md transition-transform active:scale-95 flex items-center space-x-2"
                 >
                     <FaList className="w-4 h-4 text-emerald-200" />
                 </button>
             </div>}
 
-            <div className={`flex gap-6 h-full w-full transition-all duration-300 overflow-hidden`}>
+            <div className={`flex h-full w-full transition-all duration-300 overflow-hidden`}>
                 {/* Embedded Rounded Surah Index Panel */}
-                <div className='my-6 ml-6'>
+                <div className={`my-2 sm:my-6 ${showIndex && "w-full md:w-80 md:mr-6 mr-0 px-2 sm:px-6"}`}>
                     <SurahIndexPanel isOpen={showIndex} onClose={() => setShowIndex(false)} />
                 </div>
                 {/* Main Quran Content Area */}
-                <div className='h-full w-full overflow-y-auto'>
-                    <div className='min-w-0 max-w-5xl space-y-6 py-6 pr-6 mx-auto'>
+                <div className={`h-full w-full overflow-y-auto ${showIndex && "md:block hidden"}`}>
+                    <div className='min-w-0 max-w-5xl space-y-6 py-2 sm:py-6 px-2 sm:px-6 mx-auto'>
                         <SurahHeader />
 
                         {loading ? (
@@ -77,7 +77,7 @@ export default function Main() {
             <button
                 onClick={handleQuickPlayToggle}
                 title={isPlayingCurrent ? "Pause Audio Recitation" : "Play Surah Recitation"}
-                className={`fixed bottom-6 right-6 z-30 w-12 h-12 rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 active:scale-95 ${isPlayingCurrent
+                className={`fixed bottom-6 right-3 sm:right-6 z-3 w-12 h-12 rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 active:scale-95 ${isPlayingCurrent
                     ? 'bg-emerald-600 text-white ring-4 ring-emerald-400/40 animate-pulse'
                     : 'bg-emerald-700 hover:bg-emerald-600 text-white hover:scale-105'
                     }`}

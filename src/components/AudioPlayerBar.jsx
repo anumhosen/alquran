@@ -5,7 +5,7 @@ import { FaPlay, FaPause, FaStepForward, FaStepBackward, FaVolumeUp, FaVolumeMut
 
 export default function AudioPlayerBar() {
     const { audioState, setAudioState, currentSurahMeta, updateActiveWordHighlight } = useQuranStore();
-    const { reciter, audioBasePath, audioSourceMode } = useSettingsStore();
+    const { reciter, audioFolderPath, audioSourceMode } = useSettingsStore();
     const audioRef = useRef(null);
     const [muted, setMuted] = useState(false);
     const [useFallbackOnline, setUseFallbackOnline] = useState(false);
@@ -14,16 +14,17 @@ export default function AudioPlayerBar() {
     const padNumber = (num) => String(num).padStart(3, '0');
 
     const getAudioUrl = (s, a) => {
-        if (!useFallbackOnline && audioSourceMode === 'local' && audioBasePath) {
-            const cleanPath = audioBasePath.replace(/\\/g, '/');
-            return `file:///${cleanPath}/audio/${reciter}/${padNumber(s)}.mp3`;
+        if (!useFallbackOnline && audioSourceMode === 'local' && audioFolderPath) {
+            const cleanPath = audioFolderPath.replace(/\\/g, '/');
+            return `file:///${cleanPath}/${padNumber(s)}.mp3`;
         }
+        // Online CDN streams Ayah by Ayah from EveryAyah CDN
         return `https://everyayah.com/data/Alafasy_128kbps/${padNumber(s)}${padNumber(a)}.mp3`;
     };
 
     useEffect(() => {
         setUseFallbackOnline(false);
-    }, [sura, currentAyah, audioSourceMode]);
+    }, [sura, currentAyah, audioSourceMode, audioFolderPath]);
 
     useEffect(() => {
         if (!audioRef.current) return;
@@ -102,7 +103,7 @@ export default function AudioPlayerBar() {
                     </div>
                     <div className="text-xs text-emerald-300 flex items-center space-x-1">
                         {isLocalActive ? <FaHdd className="w-3 h-3 text-emerald-400" /> : <FaGlobe className="w-3 h-3 text-cyan-300" />}
-                        <span>{isLocalActive ? 'Local Storage' : 'Online CDN'} • Word Sync Active</span>
+                        <span>{isLocalActive ? 'Local Surah File (QuranicAudio)' : 'Online Ayah CDN (EveryAyah)'} • Word Sync Active</span>
                     </div>
                 </div>
             </div>

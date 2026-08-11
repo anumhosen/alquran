@@ -1,5 +1,6 @@
 use rusqlite::{Connection, OpenFlags, types::ValueRef};
 use serde_json::{Map, Value};
+use std::fs;
 use std::path::PathBuf;
 use tauri::{AppHandle, Emitter, Manager, Window};
 
@@ -59,28 +60,64 @@ fn db_query(app_handle: AppHandle, db_name: Option<String>, query: String) -> Re
 }
 
 #[tauri::command]
-fn minimize_window(window: Window) -> Result<(), String> {
-    window.minimize().map_err(|e| e.to_string())
-}
+fn select_audio_folder() -> Result<Option<String>, String> {
+    let output = std::process::Command::new("powershell")
+        .args(&[
+            "-NoProfile",
+            "-STA",
+            "-Command",
+            "[System.Reflection.Assembly]::LoadWithPartialName('System.windows.forms') | Out-Null; $f = New-Object System.Windows.Forms.FolderBrowserDialog; $f.Description = 'Select Audio Storage Directory'; $f.ShowNewFolderButton = $true; if ($f.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $f.SelectedPath }"
+        ])
+        .output()
+        .map_err(|e| e.to_string())?;
 
-#[tauri::command]
-fn toggle_maximize_window(window: Window) -> Result<(), String> {
-    if window.is_maximized().map_err(|e| e.to_string())? {
-        window.unmaximize().map_err(|e| e.to_string())
+    let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if path.is_empty() {
+        Ok(None)
     } else {
-        window.maximize().map_err(|e| e.to_string())
+        Ok(Some(path))
     }
 }
 
 #[tauri::command]
-fn close_window(window: Window) -> Result<(), String> {
-    window.close().map_err(|e| e.to_string())
+fn get_default_audio_dir(app_handle: AppHandle) -> Result<String, String> {
+    let dir = app_handle
+        .path()
+        .app_local_data_dir()
+        .unwrap_or_default()
+        .join("audio")
+        .join("mishari_alafasy");
+    Ok(dir.to_string_lossy().to_string())
 }
 
 #[tauri::command]
-fn is_window_maximized(window: Window) -> Result<bool, String> {
-    window.is_maximized().map_err(|e| e.to_string())
+fn save_audio_file(folder_path: String, filename: String, data: Vec<u8>) -> Result<(), String> {
+    let path = PathBuf::from(&folder_path);
+    if !path.exists() {
+        fs::create_dir_all(&path).map_err(|e| format!("Failed to create folder {:?}: {}", path, e))?;
+    }
+    let file_path = path.join(filename);
+    fs::write(&file_path, data).map_err(|e| format!("Failed to write file {:?}: {}", file_path, e))?;
+    Ok(())
 }
+
+#[tauri::command]
+fn check_audio_file_exists(folder_path: String, filename: String) -> Result<bool, String> {
+    let file_path = PathBuf::from(folder_path).join(filename);
+    Ok(file_path.exists())
+}
+
+#[tauri::command]
+fn minimize_window(window: Window) -> Result<(), String> { window.minimize().map_err(|e| e.to_string()) }
+#[tauri::command]
+fn toggle_maximize_window(window: Window) -> Result<(), String> {
+    if window.is_maximized().map_err(|e| e.to_string())? { window.unmaximize().map_err(|e| e.to_string()) }
+    else { window.maximize().map_err(|e| e.to_string()) }
+}
+#[tauri::command]
+fn close_window(window: Window) -> Result<(), String> { window.close().map_err(|e| e.to_string()) }
+#[tauri::command]
+fn is_window_maximized(window: Window) -> Result<bool, String> { window.is_maximized().map_err(|e| e.to_string()) }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -101,6 +138,10 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             db_query,
+            select_audio_folder,
+            get_default_audio_dir,
+            save_audio_file,
+            check_audio_file_exists,
             minimize_window,
             toggle_maximize_window,
             close_window,

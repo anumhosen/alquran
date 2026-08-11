@@ -19,7 +19,7 @@ export default function SurahIndexPanel({ isOpen, onClose }) {
     };
 
     return (
-        <aside className="w-80 bg-white dark:bg-gray-900 border border-emerald-100 dark:border-gray-800 shadow-md rounded-2xl flex flex-col h-[calc(100vh-88px)] sticky overflow-hidden flex-shrink-0 animate-in slide-in-from-left duration-200">
+        <aside className="md:w-80 w-full bg-white dark:bg-gray-900 border border-emerald-100 dark:border-gray-800 shadow-md rounded-2xl flex flex-col h-[calc(100vh-88px)] sticky overflow-hidden flex-shrink-0 animate-in slide-in-from-left duration-200">
             {/* Header */}
             <div className="p-3.5 bg-emerald-800 text-white flex items-center justify-between">
                 <div className="flex items-center p-1 space-x-2">

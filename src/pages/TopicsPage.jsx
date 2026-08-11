@@ -39,7 +39,7 @@ export default function TopicsPage() {
 
     return (
         <div className="w-full h-full overflow-y-auto">
-            <div className='max-w-5xl mx-auto space-y-6 py-6'>
+            <div className='max-w-5xl mx-auto space-y-6 py-2 md:py-6 px-2 md:px-6'>
                 <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-md border border-emerald-100 dark:border-gray-800">
                     <h2 className="text-2xl font-bold text-emerald-900 dark:text-emerald-300 mb-2 flex items-center space-x-2">
                         <FaLayerGroup className="w-5 h-5 text-emerald-600" />

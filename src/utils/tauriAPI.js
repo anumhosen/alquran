@@ -13,52 +13,61 @@ export const tauriAPI = {
             throw err;
         }
     },
-    minimize: async () => {
+    selectAudioFolder: async () => {
         try {
-            await invoke('minimize_window');
+            return await invoke('select_audio_folder');
         } catch (err) {
-            console.error('Minimize error:', err);
+            console.error('selectAudioFolder error:', err);
+            return null;
         }
     },
-    maximize: async () => {
+    getDefaultAudioDir: async () => {
         try {
-            await invoke('toggle_maximize_window');
+            return await invoke('get_default_audio_dir');
         } catch (err) {
-            console.error('Maximize error:', err);
+            console.error('getDefaultAudioDir error:', err);
+            return '';
         }
     },
-    close: async () => {
+    saveAudioFile: async (folderPath, filename, arrayBuffer) => {
         try {
-            await invoke('close_window');
+            const data = Array.from(new Uint8Array(arrayBuffer));
+            await invoke('save_audio_file', { folderPath, filename, data });
+            return true;
         } catch (err) {
-            console.error('Close error:', err);
-        }
-    },
-    isMaximized: async () => {
-        try {
-            return await invoke('is_window_maximized');
-        } catch (err) {
-            console.error('isMaximized error:', err);
+            console.error('saveAudioFile error:', err);
             return false;
         }
     },
+    checkAudioFileExists: async (folderPath, filename) => {
+        try {
+            return await invoke('check_audio_file_exists', { folderPath, filename });
+        } catch (err) {
+            console.error('checkAudioFileExists error:', err);
+            return false;
+        }
+    },
+    minimize: async () => {
+        try { await invoke('minimize_window'); } catch (err) { console.error(err); }
+    },
+    maximize: async () => {
+        try { await invoke('toggle_maximize_window'); } catch (err) { console.error(err); }
+    },
+    close: async () => {
+        try { await invoke('close_window'); } catch (err) { console.error(err); }
+    },
+    isMaximized: async () => {
+        try { return await invoke('is_window_maximized'); } catch (err) { return false; }
+    },
     onMaximizeChange: (callback) => {
         invoke('is_window_maximized').then((isMax) => callback(Boolean(isMax))).catch(() => { });
-
         let unlistenFn = null;
-        listen('window:isMaximized', (event) => {
-            callback(Boolean(event.payload));
-        }).then((unlisten) => {
+        listen('window:isMaximized', (event) => { callback(Boolean(event.payload)); }).then((unlisten) => {
             unlistenFn = unlisten;
-            if (!listenersMap.has('window:isMaximized')) {
-                listenersMap.set('window:isMaximized', []);
-            }
+            if (!listenersMap.has('window:isMaximized')) listenersMap.set('window:isMaximized', []);
             listenersMap.get('window:isMaximized').push(unlisten);
         });
-
-        return () => {
-            if (unlistenFn) unlistenFn();
-        };
+        return () => { if (unlistenFn) unlistenFn(); };
     }
 };
 

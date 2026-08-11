@@ -31,7 +31,7 @@ export default function Home() {
 
     return (
         <div className="w-full h-full overflow-y-auto">
-            <div className='max-w-5xl py-6 space-y-6 mx-auto'>
+            <div className='max-w-5xl py-6 px-6 space-y-6 mx-auto'>
                 {/* Last Read Quick Resume Banner */}
                 {lastRead && (
                     <div

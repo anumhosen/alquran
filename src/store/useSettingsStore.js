@@ -1,7 +1,17 @@
 import { create } from 'zustand';
 
+const defaultTranslations = ['bn_bayaan.db'];
+
+const getStoredTranslations = () => {
+    try {
+        const stored = localStorage.getItem('selectedTranslations');
+        if (stored) return JSON.parse(stored);
+    } catch (e) { }
+    return defaultTranslations;
+};
+
 export const useSettingsStore = create((set) => ({
-    translationDb: localStorage.getItem('translationDb') || 'bn_bayaan.db',
+    selectedTranslations: getStoredTranslations(),
     tafsirDb: localStorage.getItem('tafsirDb') || 'bn_tafsir_kathir.db',
     showWordByWord: JSON.parse(localStorage.getItem('showWordByWord') ?? 'true'),
     wbwLanguage: localStorage.getItem('wbwLanguage') || 'bn',
@@ -12,61 +22,57 @@ export const useSettingsStore = create((set) => ({
     reciter: localStorage.getItem('reciter') || 'mishari_alafasy',
     theme: localStorage.getItem('theme') || 'emerald',
 
-    // Audio directory & mode settings
-    audioBasePath: localStorage.getItem('audioBasePath') || 'd:/Development/TAURI/Al Quran/src-tauri/assets',
+    audioFolderPath: localStorage.getItem('audioFolderPath') || 'd:/Development/TAURI/Al Quran/src-tauri/assets/audio/mishari_alafasy',
     audioSourceMode: localStorage.getItem('audioSourceMode') || 'local',
     autoScrollAyah: JSON.parse(localStorage.getItem('autoScrollAyah') ?? 'true'),
 
-    setTranslationDb: (db) => {
-        localStorage.setItem('translationDb', db);
-        set({ translationDb: db });
+    setSelectedTranslations: (list) => {
+        const newList = list.length > 0 ? list : ['bn_bayaan.db'];
+        localStorage.setItem('selectedTranslations', JSON.stringify(newList));
+        set({ selectedTranslations: newList });
     },
-    setTafsirDb: (db) => {
-        localStorage.setItem('tafsirDb', db);
-        set({ tafsirDb: db });
-    },
-    setShowWordByWord: (show) => {
-        localStorage.setItem('showWordByWord', JSON.stringify(show));
-        set({ showWordByWord: show });
-    },
-    setWbwLanguage: (lang) => {
-        localStorage.setItem('wbwLanguage', lang);
-        set({ wbwLanguage: lang });
-    },
-    setArabicFontSize: (size) => {
-        localStorage.setItem('arabicFontSize', size.toString());
-        set({ arabicFontSize: size });
-    },
-    setTranslationFontSize: (size) => {
-        localStorage.setItem('translationFontSize', size.toString());
-        set({ translationFontSize: size });
-    },
-    setArabicFontFamily: (font) => {
-        localStorage.setItem('arabicFontFamily', font);
-        set({ arabicFontFamily: font });
-    },
-    setBanglaFontFamily: (font) => {
-        localStorage.setItem('banglaFontFamily', font);
-        set({ banglaFontFamily: font });
-    },
-    setReciter: (reciter) => {
-        localStorage.setItem('reciter', reciter);
-        set({ reciter });
-    },
-    setTheme: (theme) => {
-        localStorage.setItem('theme', theme);
-        set({ theme });
-    },
-    setAudioBasePath: (path) => {
-        localStorage.setItem('audioBasePath', path);
-        set({ audioBasePath: path });
-    },
-    setAudioSourceMode: (mode) => {
-        localStorage.setItem('audioSourceMode', mode);
-        set({ audioSourceMode: mode });
-    },
-    setAutoScrollAyah: (enabled) => {
-        localStorage.setItem('autoScrollAyah', JSON.stringify(enabled));
-        set({ autoScrollAyah: enabled });
-    }
+    toggleTranslation: (db) => set((state) => {
+        const exists = state.selectedTranslations.includes(db);
+        let updated = [];
+        if (exists) {
+            updated = state.selectedTranslations.filter((d) => d !== db);
+            if (updated.length === 0) updated = ['bn_bayaan.db'];
+        } else {
+            updated = [...state.selectedTranslations, db];
+        }
+        localStorage.setItem('selectedTranslations', JSON.stringify(updated));
+        return { selectedTranslations: updated };
+    }),
+    setTafsirDb: (db) => { localStorage.setItem('tafsirDb', db); set({ tafsirDb: db }); },
+    setShowWordByWord: (show) => { localStorage.setItem('showWordByWord', JSON.stringify(show)); set({ showWordByWord: show }); },
+    setWbwLanguage: (lang) => { localStorage.setItem('wbwLanguage', lang); set({ wbwLanguage: lang }); },
+    setArabicFontSize: (size) => { localStorage.setItem('arabicFontSize', size.toString()); set({ arabicFontSize: size }); },
+    setTranslationFontSize: (size) => { localStorage.setItem('translationFontSize', size.toString()); set({ translationFontSize: size }); },
+    setArabicFontFamily: (font) => { localStorage.setItem('arabicFontFamily', font); set({ arabicFontFamily: font }); },
+    setBanglaFontFamily: (font) => { localStorage.setItem('banglaFontFamily', font); set({ banglaFontFamily: font }); },
+    setReciter: (reciter) => { localStorage.setItem('reciter', reciter); set({ reciter }); },
+    setTheme: (theme) => { localStorage.setItem('theme', theme); set({ theme }); },
+    setAudioFolderPath: (path) => { localStorage.setItem('audioFolderPath', path); set({ audioFolderPath: path }); },
+    setAudioSourceMode: (mode) => { localStorage.setItem('audioSourceMode', mode); set({ audioSourceMode: mode }); },
+    setAutoScrollAyah: (enabled) => { localStorage.setItem('autoScrollAyah', JSON.stringify(enabled)); set({ autoScrollAyah: enabled }); }
 }));
+
+export const translationMetaMap = {
+    'bn_bayaan.db': { name: 'বায়ান ফাউন্ডেশন', lang: 'bn' },
+    'bn_taisirul.db': { name: 'তাইসিরুল কুরআন', lang: 'bn' },
+    'bn_mujibur.db': { name: 'মুজিবুর রহমান', lang: 'bn' },
+    'bn_fozlur.db': { name: 'ফজলুর রহমান', lang: 'bn' },
+    'bn_taqi.db': { name: 'তাকী ওসমানী', lang: 'bn' },
+    'bn_mkhan.db': { name: 'মুহিউদ্দীন খান', lang: 'bn' },
+    'en_sahih.db': { name: 'Sahih International', lang: 'en' },
+    'quran_indo.db': { name: 'Indonesian', lang: 'in' }
+};
+
+export const tafsirMetaMap = {
+    'bn_tafsir_kathir.db': 'তাফসীর ইবনে কাছীর (বাংলা)',
+    'bn_tafsirzakaria.db': 'তাফসীর আবু বকর জাকারিয়া (বাংলা)',
+    'kathir.db': 'তাফসীর ইবনে কাছীর (আরবি)',
+    'bn_fmazid.db': 'তাফসীর ফজলুর মজিদ (বাংলা)',
+    'bn_tafsirbayaan.db': 'তাফসীরে বয়ান (বাংলা)',
+    'bn_mokhtasar.db': 'আল-মুখতাসার (বাংলা)'
+};

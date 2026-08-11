@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import suraData from '../../src-tauri/assets/sura_names.json';
 import { tauriAPI } from '../utils/tauriAPI';
-import { useSettingsStore } from './useSettingsStore';
+import { useSettingsStore, translationMetaMap } from './useSettingsStore';
 
 export const useQuranStore = create((set, get) => ({
     surahList: suraData,
@@ -10,9 +10,8 @@ export const useQuranStore = create((set, get) => ({
     ayahs: [],
     loading: false,
     timingsByAyah: {},
-    activeWordTiming: null, // { sura, ayah, word }
+    activeWordTiming: null,
 
-    // Modal & Drawer states
     activeTafsirAyah: null,
     tafsirText: '',
     tafsirLoading: false,
@@ -33,7 +32,7 @@ export const useQuranStore = create((set, get) => ({
     fetchAyahs: async (surahId) => {
         set({ loading: true });
         try {
-            const translationDb = useSettingsStore.getState().translationDb;
+            const selectedTranslations = useSettingsStore.getState().selectedTranslations;
             
             // 1. Fetch Arabic verses
             const arRows = await tauriAPI.DBOperation(
@@ -41,14 +40,19 @@ export const useQuranStore = create((set, get) => ({
                 'ar_quran.db'
             );
 
-            // 2. Fetch Translation verses
-            let trRows = [];
-            try {
-                trRows = await tauriAPI.DBOperation(
-                    `SELECT sura, ayah, text FROM verses WHERE sura = ${surahId} ORDER BY ayah ASC`,
-                    translationDb
-                );
-            } catch (e) { console.warn('Translation fetch warning:', e); }
+            // 2. Fetch Selected Multiple Translations
+            const translationsDataMap = {};
+            for (const trDb of selectedTranslations) {
+                try {
+                    const trRows = await tauriAPI.DBOperation(
+                        `SELECT sura, ayah, text FROM verses WHERE sura = ${surahId} ORDER BY ayah ASC`,
+                        trDb
+                    );
+                    const dict = {};
+                    trRows.forEach((r) => { dict[r.ayah] = r.text; });
+                    translationsDataMap[trDb] = dict;
+                } catch (e) { console.warn(`Translation fetch error (${trDb}):`, e); }
+            }
 
             // 3. Fetch Word-by-word data
             let wordRows = [];
@@ -68,7 +72,7 @@ export const useQuranStore = create((set, get) => ({
                 );
             } catch (e) { console.warn('Corpus fetch warning:', e); }
 
-            // 5. Fetch Audio timings from mishari_alafasy.db
+            // 5. Fetch Audio timings
             const timingMap = {};
             try {
                 const audioDb = `${useSettingsStore.getState().reciter}/${useSettingsStore.getState().reciter}.db`;
@@ -85,14 +89,12 @@ export const useQuranStore = create((set, get) => ({
                 });
             } catch (e) { console.warn('Timings fetch warning:', e); }
 
-            // Map corpus Arabic words by `${ayah}-${word}`
             const corpusMap = {};
             corpusRows.forEach((c) => {
                 const arConcat = [c.ar1, c.ar2, c.ar3, c.ar4, c.ar5].filter(Boolean).join('');
                 corpusMap[`${c.ayah}-${c.word}`] = arConcat;
             });
 
-            // Group words by ayah
             const wordsByAyah = {};
             wordRows.forEach((w) => {
                 if (!wordsByAyah[w.ayah]) wordsByAyah[w.ayah] = [];
@@ -100,17 +102,22 @@ export const useQuranStore = create((set, get) => ({
                 wordsByAyah[w.ayah].push({ ...w, arabic: arConcat });
             });
 
-            // Map translations by ayah
-            const trByAyah = {};
-            trRows.forEach((t) => { trByAyah[t.ayah] = t.text; });
+            const combined = arRows.map((ar) => {
+                const trList = selectedTranslations.map((trDb) => ({
+                    db: trDb,
+                    name: translationMetaMap[trDb]?.name || trDb,
+                    text: translationsDataMap[trDb]?.[ar.ayah] || ''
+                }));
 
-            const combined = arRows.map((ar) => ({
-                sura: ar.sura,
-                ayah: ar.ayah,
-                arabicText: ar.text,
-                translationText: trByAyah[ar.ayah] || '',
-                words: wordsByAyah[ar.ayah] || []
-            }));
+                return {
+                    sura: ar.sura,
+                    ayah: ar.ayah,
+                    arabicText: ar.text,
+                    translations: trList,
+                    translationText: trList[0]?.text || '',
+                    words: wordsByAyah[ar.ayah] || []
+                };
+            });
 
             set({ ayahs: combined, timingsByAyah: timingMap, loading: false });
         } catch (err) {

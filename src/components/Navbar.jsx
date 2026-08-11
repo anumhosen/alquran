@@ -1,26 +1,23 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuranStore } from '../store/useQuranStore';
-import { useSettingsStore } from '../store/useSettingsStore';
 import { useSidebarStore } from '../store/useSidebarStore';
+import { useSettingsStore } from '../store/useSettingsStore';
 import { tauriAPI } from '../utils/tauriAPI';
-import { 
-    FaSearch, FaBars, FaCog, FaMoon, FaSun 
-} from 'react-icons/fa';
-import { VscChromeClose, VscChromeMaximize, VscChromeMinimize } from 'react-icons/vsc';
+import { FaBars, FaMoon, FaSun, FaCog } from 'react-icons/fa';
+import { VscChromeMinimize, VscChromeMaximize, VscChromeRestore, VscChromeClose } from 'react-icons/vsc';
 
 export default function Navbar() {
     const navigate = useNavigate();
-    const { surahList, currentSurahId, setCurrentSurah } = useQuranStore();
-    const { theme, setTheme } = useSettingsStore();
     const { toggleLeft, toggleRight } = useSidebarStore();
+    const { theme, setTheme } = useSettingsStore();
+    const [isMaximized, setIsMaximized] = useState(false);
 
-    const handleSelectSurah = (e) => {
-        const id = parseInt(e.target.value, 10);
-        if (id) {
-            setCurrentSurah(id);
-            navigate('/main');
-        }
-    };
+    useEffect(() => {
+        const unlisten = tauriAPI.onMaximizeChange((maximized) => {
+            setIsMaximized(maximized);
+        });
+        return () => unlisten();
+    }, []);
 
     const handleThemeToggle = () => {
         if (theme === 'emerald') setTheme('dark');
@@ -47,31 +44,8 @@ export default function Navbar() {
                     <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white shadow">
                         <img src='icon.png' alt='আল কুরআন'/>
                     </div>
-                    <span className="font-bold text-xl tracking-wide hidden sm:inline">আল কুরআন</span>
+                    <span className="font-bold text-xl tracking-wide hidden md:inline">আল কুরআন</span>
                 </div>
-            </div>
-
-            {/* Middle section: Quick Surah Selector */}
-            <div className="flex items-center space-x-2 max-w-md w-full mx-4">
-                <select
-                    value={currentSurahId}
-                    onChange={handleSelectSurah}
-                    className="bg-emerald-900/80 border border-emerald-600 text-emerald-100 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-400 w-full cursor-pointer"
-                >
-                    {surahList.map((s) => (
-                        <option key={s.id} value={s.id}>
-                            {s.id}. {s.en} ({s.bn}) - {s.ar}
-                        </option>
-                    ))}
-                </select>
-
-                <button 
-                    onClick={() => navigate('/search')}
-                    title="Search Quran"
-                    className="p-2 hover:bg-emerald-700 rounded-lg transition-colors flex-shrink-0"
-                >
-                    <FaSearch className="w-4 h-4 text-emerald-200" />
-                </button>
             </div>
 
             {/* Right section: Theme & Settings & Window Controls */}
@@ -94,13 +68,13 @@ export default function Navbar() {
 
                 {/* Tauri Window Controls */}
                 <div className="flex items-center space-x-1 pl-2 -mr-2 border-l border-emerald-700">
-                    <button onClick={() => tauriAPI.minimize()} className="p-1.5 hover:bg-emerald-700 text-emerald-200 rounded">
+                    <button onClick={() => tauriAPI.minimize()} title="Minimize" className="p-1.5 hover:bg-emerald-700 text-emerald-200 rounded">
                         <VscChromeMinimize className="w-4 h-4" />
                     </button>
-                    <button onClick={() => tauriAPI.maximize()} className="p-1.5 hover:bg-emerald-700 text-emerald-200 rounded">
-                        <VscChromeMaximize className="w-4 h-4" />
+                    <button onClick={() => tauriAPI.maximize()} title={isMaximized ? "Restore" : "Maximize"} className="p-1.5 hover:bg-emerald-700 text-emerald-200 rounded">
+                        {isMaximized ? <VscChromeRestore className="w-4 h-4" /> : <VscChromeMaximize className="w-4 h-4" />}
                     </button>
-                    <button onClick={() => tauriAPI.close()} className="p-1.5 hover:bg-red-600 text-white rounded">
+                    <button onClick={() => tauriAPI.close()} title="Close" className="p-1.5 hover:bg-red-600 text-white rounded">
                         <VscChromeClose className="w-4 h-4" />
                     </button>
                 </div>

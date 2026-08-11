@@ -1,4 +1,3 @@
-import React from 'react';
 import { FaBackspace, FaTimes } from 'react-icons/fa';
 
 export default function ArabicKeyboard({ onInput, onDelete, onClear, onClose }) {
