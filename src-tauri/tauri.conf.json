@@ -20,16 +20,21 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      }
     }
   },
   "bundle": {
     "active": true,
-    "targets": [
-      "nsis"
-    ],
+    "targets": "all",
     "publisher": "Anum Hosen",
     "copyright": "Copyright © 2026 Anum Hosen <anumhosen@gmail.com>",
+    "category": "Education",
+    "shortDescription": "Al Quran Desktop Application",
+    "longDescription": "Al Quran Desktop Application with Word-by-Word Analysis, Multiple Translations, Tafsirs, and Audio Sync.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

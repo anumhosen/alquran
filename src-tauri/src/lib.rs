@@ -81,12 +81,7 @@ fn select_audio_folder() -> Result<Option<String>, String> {
 
 #[tauri::command]
 fn get_default_audio_dir(app_handle: AppHandle) -> Result<String, String> {
-    let dir = app_handle
-        .path()
-        .app_local_data_dir()
-        .unwrap_or_default()
-        .join("audio")
-        .join("mishari_alafasy");
+    let dir = app_handle.path().app_local_data_dir().unwrap_or_default();
     Ok(dir.to_string_lossy().to_string())
 }
 

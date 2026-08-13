@@ -34,13 +34,11 @@ export const useQuranStore = create((set, get) => ({
         try {
             const selectedTranslations = useSettingsStore.getState().selectedTranslations;
             
-            // 1. Fetch Arabic verses
             const arRows = await tauriAPI.DBOperation(
                 `SELECT sura, ayah, text FROM verses WHERE sura = ${surahId} ORDER BY ayah ASC`,
                 'ar_quran.db'
             );
 
-            // 2. Fetch Selected Multiple Translations
             const translationsDataMap = {};
             for (const trDb of selectedTranslations) {
                 try {
@@ -54,7 +52,6 @@ export const useQuranStore = create((set, get) => ({
                 } catch (e) { console.warn(`Translation fetch error (${trDb}):`, e); }
             }
 
-            // 3. Fetch Word-by-word data
             let wordRows = [];
             try {
                 wordRows = await tauriAPI.DBOperation(
@@ -63,7 +60,6 @@ export const useQuranStore = create((set, get) => ({
                 );
             } catch (e) { console.warn('Word by word fetch warning:', e); }
 
-            // 4. Fetch Corpus segments
             let corpusRows = [];
             try {
                 corpusRows = await tauriAPI.DBOperation(
@@ -72,7 +68,6 @@ export const useQuranStore = create((set, get) => ({
                 );
             } catch (e) { console.warn('Corpus fetch warning:', e); }
 
-            // 5. Fetch Audio timings
             const timingMap = {};
             try {
                 const audioDb = `${useSettingsStore.getState().reciter}/${useSettingsStore.getState().reciter}.db`;
@@ -126,22 +121,56 @@ export const useQuranStore = create((set, get) => ({
         }
     },
 
-    updateActiveWordHighlight: (sura, ayah, currentAudioSec, isSingleAyahAudio) => {
-        const timingData = get().timingsByAyah[ayah];
-        if (!timingData || !timingData.words) {
+    updateActiveWordHighlight: (sura, currentAudioSec, isSingleAyahAudio) => {
+        const timingsByAyah = get().timingsByAyah;
+        if (!timingsByAyah || Object.keys(timingsByAyah).length === 0) {
             set({ activeWordTiming: null });
             return;
         }
 
-        const currentMs = currentAudioSec * 1000;
-        const targetMs = isSingleAyahAudio ? timingData.ayahTimeMs + currentMs : currentMs;
+        const currentMs = Math.round(currentAudioSec * 1000);
+        const ayahsList = Object.keys(timingsByAyah).map(Number).sort((a, b) => a - b);
 
-        const match = timingData.words.find(
-            (w) => targetMs >= w.startMs && targetMs <= w.endMs
-        );
+        if (isSingleAyahAudio) {
+            const currentAyah = get().audioState.currentAyah;
+            const timingData = timingsByAyah[currentAyah];
+            if (!timingData || !timingData.words) {
+                set({ activeWordTiming: null });
+                return;
+            }
+            const targetMs = timingData.ayahTimeMs + currentMs;
+            const match = timingData.words.find((w) => targetMs >= w.startMs && targetMs <= w.endMs);
+            set({ activeWordTiming: match ? { sura, ayah: currentAyah, word: match.word } : null });
+            return;
+        }
 
-        if (match) {
-            set({ activeWordTiming: { sura, ayah, word: match.word } });
+        let activeAyah = ayahsList[0];
+        for (let i = 0; i < ayahsList.length; i++) {
+            const aNum = ayahsList[i];
+            const aStart = timingsByAyah[aNum].ayahTimeMs;
+            const nextStart = ayahsList[i + 1] ? timingsByAyah[ayahsList[i + 1]].ayahTimeMs : Infinity;
+            if (currentMs >= aStart && currentMs < nextStart) {
+                activeAyah = aNum;
+                break;
+            }
+        }
+
+        const currentAudioState = get().audioState;
+        if (currentAudioState.currentAyah !== activeAyah) {
+            set((prev) => ({
+                audioState: { ...prev.audioState, currentAyah: activeAyah }
+            }));
+            const autoScroll = useSettingsStore.getState().autoScrollAyah;
+            if (autoScroll) {
+                const el = document.getElementById(`ayah-${sura}-${activeAyah}`);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        const timingData = timingsByAyah[activeAyah];
+        if (timingData && timingData.words) {
+            const match = timingData.words.find((w) => currentMs >= w.startMs && currentMs <= w.endMs);
+            set({ activeWordTiming: match ? { sura, ayah: activeAyah, word: match.word } : null });
         } else {
             set({ activeWordTiming: null });
         }

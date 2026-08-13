@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { convertFileSrc } from '@tauri-apps/api/core';
 import { useQuranStore } from '../store/useQuranStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { FaPlay, FaPause, FaStepForward, FaStepBackward, FaVolumeUp, FaVolumeMute, FaHdd, FaGlobe } from 'react-icons/fa';
 
 export default function AudioPlayerBar() {
-    const { audioState, setAudioState, currentSurahMeta, updateActiveWordHighlight } = useQuranStore();
+    const { audioState, setAudioState, currentSurahMeta, updateActiveWordHighlight, timingsByAyah } = useQuranStore();
     const { reciter, audioFolderPath, audioSourceMode } = useSettingsStore();
     const audioRef = useRef(null);
     const [muted, setMuted] = useState(false);
@@ -16,9 +17,13 @@ export default function AudioPlayerBar() {
     const getAudioUrl = (s, a) => {
         if (!useFallbackOnline && audioSourceMode === 'local' && audioFolderPath) {
             const cleanPath = audioFolderPath.replace(/\\/g, '/');
-            return `file:///${cleanPath}/${padNumber(s)}.mp3`;
+            const fullPath = `${cleanPath}/${padNumber(s)}.mp3`;
+            try {
+                return convertFileSrc(fullPath);
+            } catch (e) {
+                console.warn('convertFileSrc error:', e);
+            }
         }
-        // Online CDN streams Ayah by Ayah from EveryAyah CDN
         return `https://everyayah.com/data/Alafasy_128kbps/${padNumber(s)}${padNumber(a)}.mp3`;
     };
 
@@ -29,6 +34,14 @@ export default function AudioPlayerBar() {
     useEffect(() => {
         if (!audioRef.current) return;
         if (isPlaying) {
+            const isLocalFull = audioSourceMode === 'local' && !useFallbackOnline;
+            if (isLocalFull && timingsByAyah && timingsByAyah[currentAyah]) {
+                const ayahStartSec = timingsByAyah[currentAyah].ayahTimeMs / 1000;
+                const curSec = audioRef.current.currentTime;
+                if (Math.abs(curSec - ayahStartSec) > 3.0) {
+                    audioRef.current.currentTime = ayahStartSec;
+                }
+            }
             audioRef.current.play().catch((err) => {
                 console.warn('Audio playback error, falling back to online CDN:', err);
                 if (!useFallbackOnline) setUseFallbackOnline(true);
@@ -41,7 +54,7 @@ export default function AudioPlayerBar() {
     const handleTimeUpdate = () => {
         if (audioRef.current && isPlaying) {
             const isSingleAyahAudio = useFallbackOnline || audioSourceMode === 'online';
-            updateActiveWordHighlight(sura, currentAyah, audioRef.current.currentTime, isSingleAyahAudio);
+            updateActiveWordHighlight(sura, audioRef.current.currentTime, isSingleAyahAudio);
         }
     };
 
@@ -58,8 +71,6 @@ export default function AudioPlayerBar() {
         if (currentSurahMeta && currentAyah < currentSurahMeta.verse_count) {
             const nextAyah = currentAyah + 1;
             setAudioState({ currentAyah: nextAyah, isPlaying: true });
-            const el = document.getElementById(`ayah-${sura}-${nextAyah}`);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else {
             setAudioState({ isPlaying: false });
         }
@@ -67,13 +78,23 @@ export default function AudioPlayerBar() {
 
     const handleNext = () => {
         if (currentSurahMeta && currentAyah < currentSurahMeta.verse_count) {
-            setAudioState({ currentAyah: currentAyah + 1, isPlaying: true });
+            const nextAyah = currentAyah + 1;
+            const timing = timingsByAyah[nextAyah];
+            if (audioRef.current && timing && (audioSourceMode === 'local' && !useFallbackOnline)) {
+                audioRef.current.currentTime = timing.ayahTimeMs / 1000;
+            }
+            setAudioState({ currentAyah: nextAyah, isPlaying: true });
         }
     };
 
     const handlePrev = () => {
         if (currentAyah > 1) {
-            setAudioState({ currentAyah: currentAyah - 1, isPlaying: true });
+            const prevAyah = currentAyah - 1;
+            const timing = timingsByAyah[prevAyah];
+            if (audioRef.current && timing && (audioSourceMode === 'local' && !useFallbackOnline)) {
+                audioRef.current.currentTime = timing.ayahTimeMs / 1000;
+            }
+            setAudioState({ currentAyah: prevAyah, isPlaying: true });
         }
     };
 
@@ -82,7 +103,7 @@ export default function AudioPlayerBar() {
     const isLocalActive = audioSourceMode === 'local' && !useFallbackOnline;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-emerald-950/95 text-white backdrop-blur-md border-t border-emerald-700/60 shadow-2xl px-4 py-3 flex items-center justify-between">
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-emerald-950/95 text-white backdrop-blur-md border-t border-emerald-700/60 shadow-2xl px-4 py-1 flex items-center justify-between">
             <audio
                 ref={audioRef}
                 src={getAudioUrl(sura, currentAyah)}
@@ -94,7 +115,7 @@ export default function AudioPlayerBar() {
 
             {/* Now Playing Info */}
             <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center font-bold text-emerald-100 border border-emerald-500 shadow">
+                <div className="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center font-bold text-emerald-100 border border-emerald-500 shadow">
                     {sura}:{currentAyah}
                 </div>
                 <div className="hidden sm:block">
@@ -103,7 +124,7 @@ export default function AudioPlayerBar() {
                     </div>
                     <div className="text-xs text-emerald-300 flex items-center space-x-1">
                         {isLocalActive ? <FaHdd className="w-3 h-3 text-emerald-400" /> : <FaGlobe className="w-3 h-3 text-cyan-300" />}
-                        <span>{isLocalActive ? 'Local Surah File (QuranicAudio)' : 'Online Ayah CDN (EveryAyah)'} • Word Sync Active</span>
+                        <span>{isLocalActive ? 'Local Surah File (Asset Protocol)' : 'Online Ayah CDN (EveryAyah)'} • Sync Active</span>
                     </div>
                 </div>
             </div>
@@ -120,9 +141,9 @@ export default function AudioPlayerBar() {
 
                 <button
                     onClick={() => setAudioState({ isPlaying: !isPlaying })}
-                    className="p-3 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 rounded-full shadow-lg transition-transform active:scale-95"
+                    className="p-2 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 rounded-full shadow-lg transition-transform active:scale-95"
                 >
-                    {isPlaying ? <FaPause className="w-5 h-5" /> : <FaPlay className="w-5 h-5 pl-0.5" />}
+                    {isPlaying ? <FaPause className="w-4 h-4" /> : <FaPlay className="w-4 h-4 pl-0.5" />}
                 </button>
 
                 <button
